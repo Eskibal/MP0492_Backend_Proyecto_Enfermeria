@@ -21,162 +21,222 @@ import com.example.enfermeria.entity.Nurse;
 
 @RestController
 @RequestMapping("/nurse")
-public class NurseController {
-	
+public class NurseController
+{
+
 	@Autowired
 	private NurseRepository nurseRepository;
 
-    public NurseController(NurseRepository nurseRepository) {
-        this.nurseRepository = nurseRepository;
-    }
+	public NurseController(NurseRepository nurseRepository)
+	{
+		this.nurseRepository = nurseRepository;
+	}
+
 	
+	
+	// ENDPOINT DEL @LOGIN --> Se conecta con el NurseLogin.kt
 	@PostMapping("/login")
-    public @ResponseBody ResponseEntity<Boolean> login(@RequestBody Nurse loginRequest) {		
+	public @ResponseBody ResponseEntity<Boolean> login(@RequestBody Nurse loginRequest)
+	{
 		String user = loginRequest.getUser();
 		String password = loginRequest.getPassword();
-    	
+
 		Optional<Nurse> nurse = nurseRepository.findByUser(user);
-		if (nurse.isPresent() && nurse.get().getPassword().equals(password)) {
-		    return ResponseEntity.ok(true);
+		
+		if (nurse.isPresent() && nurse.get().getPassword().equals(password))
+		{
+			return ResponseEntity.ok(true);
 		}
+		
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
-    }
+	}
+
 	
+	
+	// ENDPOINT DEL @LIST --> Se conecta con el NurseList.kt
 	@GetMapping("/index")
 	public @ResponseBody Iterable<Nurse> getAll()
 	{
 		return nurseRepository.findAll();
 	}
-	
+
+	// ENDPOINT DEL @FIND --> Se conecta con el NurseSearch.kt
 	@GetMapping("/name")
-    public ResponseEntity<Nurse> findByName(@RequestParam("name") String name) {
-		try {
+	public ResponseEntity<Nurse> findByName(@RequestParam("name") String name)
+	{
+		try
+		{
 			Optional<Nurse> nurse = nurseRepository.findByNameIgnoreCase(name);
 
-	        if (nurse.isPresent()) {
-	            return ResponseEntity.ok(nurse.get());
-	        } else {
-	            return ResponseEntity.notFound().build();
-	        }
-		} catch (Exception e) {
+			if (nurse.isPresent())
+			{
+				return ResponseEntity.ok(nurse.get());
+			}
+			else
+			{
+				return ResponseEntity.notFound().build();
+			}
+		} 
+		catch (Exception e)
+		{
 			return ResponseEntity.noContent().build();
 		}
-        
-    }
+	}
+
 	
+	
+	// ENDPOINT DEL @REGISTER --> Se conecta con el NurseRegister.kt
 	@PostMapping("/new")
-	public ResponseEntity<Void> createNurse(@RequestBody Nurse newNurseRequest, UriComponentsBuilder ucb) {
+	public ResponseEntity<Void> createNurse(@RequestBody Nurse newNurseRequest, UriComponentsBuilder ucb)
+	{
 		boolean valid = true;
+
 		// name
-		if (newNurseRequest.getName() == null || newNurseRequest.getName().trim().length() < 3) {
+		if (newNurseRequest.getName() == null || newNurseRequest.getName().trim().length() < 3)
+		{
 			valid = false;
 		}
+
 		// user
-		if (newNurseRequest.getUser() == null || newNurseRequest.getUser().trim().isEmpty()) {
+		if (newNurseRequest.getUser() == null || newNurseRequest.getUser().trim().isEmpty())
+		{
 			valid = false;
 		}
+
 		// password
 		if (newNurseRequest.getPassword() == null || newNurseRequest.getPassword().length() < 6
-				|| !newNurseRequest.getPassword().matches("^(?=.*[A-Za-z])(?=.*\\d).+$")) {
+				|| !newNurseRequest.getPassword().matches("^(?=.*[A-Za-z])(?=.*\\d).+$"))
+		{
 			valid = false;
 		}
+
 		// email
-		if (newNurseRequest.getEmail() == null || !newNurseRequest.getEmail().matches("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,6}$")) {
+		if (newNurseRequest.getEmail() == null
+				|| !newNurseRequest.getEmail().matches("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,6}$"))
+		{
 			valid = false;
 		}
-		if (valid) {
+
+		if (valid)
+		{
 			Nurse savedNurse = nurseRepository.save(newNurseRequest);
 			URI locationOfNewNurse = ucb.path("nurse/{id}").buildAndExpand(savedNurse.getIdNurse()).toUri();
 			return ResponseEntity.created(locationOfNewNurse).build();
-		} else {
+		}
+		else
+		{
 			return ResponseEntity.badRequest().build();
 		}
 	}
+
 	
+	
+	// ENDPOINT DEL @PROFILE --> Se conecta con el NurseProfile.kt
 	@GetMapping("/{requestedId}")
 	public ResponseEntity<Nurse> findById(@PathVariable int requestedId)
 	{
 		Optional<Nurse> nurse = nurseRepository.findById(requestedId);
-		if (nurse.isPresent()) {
+
+		if (nurse.isPresent())
+		{
 			return ResponseEntity.ok(nurse.get());
-		} else {
+		}
+		else
+		{
 			return ResponseEntity.notFound().build();
 		}
 	}
+
 	
+	
+	// ENDPOINT DEL @PROFILE --> Se conecta con el NurseProfile.kt
 	@PutMapping("/{requestedId}")
-	public ResponseEntity<Void> putNurse(@PathVariable int requestedId, @RequestBody Nurse nurseUpdate) {
-	    Optional<Nurse> nurse = nurseRepository.findById(requestedId);
-	    if (nurse.isPresent()) {
-	        Nurse updatedNurse = nurse.get();
-	        boolean valid = true;
-	        
-	        // name
-	        if (nurseUpdate.getName() != null && 
-	        	nurseUpdate.getName().trim().length() >= 3) {
-	        	
-	        	updatedNurse.setName(nurseUpdate.getName());
-	        	
-	        } else {
-	        	valid = false;
-	        }
+	public ResponseEntity<Void> putNurse(@PathVariable int requestedId, @RequestBody Nurse nurseUpdate)
+	{
+		Optional<Nurse> nurse = nurseRepository.findById(requestedId);
 
-	        // user
-	        if (nurseUpdate.getUser() != null && 
-	        	!nurseUpdate.getUser().trim().isEmpty()) {
-	        	
-		        updatedNurse.setUser(nurseUpdate.getUser());
-		        
-	        } else {
-	        	valid = false;
-	        }
+		if (nurse.isPresent())
+		{
+			Nurse updatedNurse = nurse.get();
+			boolean valid = true;
 
-	        // password
-	        if (nurseUpdate.getPassword() != null &&
-	            nurseUpdate.getPassword().length() >= 6 &&
-	            nurseUpdate.getPassword().matches("^(?=.*[A-Za-z])(?=.*\\d).+$")) {
-	        	
-	            updatedNurse.setPassword(nurseUpdate.getPassword());
-	            
-	        } else {
-	        	valid = false;
-	        }
+			// name
+			if (nurseUpdate.getName() != null && nurseUpdate.getName().trim().length() >= 3)
+			{
 
-	        // email
-	        if (nurseUpdate.getEmail() != null && 
-	        	nurseUpdate.getEmail().matches("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,6}$")) {
-	        	
-	        	updatedNurse.setEmail(nurseUpdate.getEmail());
-	        	
-	        } else {
-	        	valid = false;
-	        }
-	        
-	        if(valid) {
-	        	nurseRepository.save(updatedNurse);
-	        	return ResponseEntity.ok().build();
-	        } else {
-	        	return ResponseEntity.badRequest().build();
-	        }
-	        
-	    } else {
-	        return ResponseEntity.notFound().build();
-	    }
+				updatedNurse.setName(nurseUpdate.getName());
+
+			}
+			else
+			{
+				valid = false;
+			}
+
+			// user
+			if (nurseUpdate.getUser() != null && !nurseUpdate.getUser().trim().isEmpty())
+			{
+
+				updatedNurse.setUser(nurseUpdate.getUser());
+
+			}
+			else
+			{
+				valid = false;
+			}
+
+			// password
+			if (nurseUpdate.getPassword() != null && nurseUpdate.getPassword().length() >= 6
+					&& nurseUpdate.getPassword().matches("^(?=.*[A-Za-z])(?=.*\\d).+$"))
+			{
+				updatedNurse.setPassword(nurseUpdate.getPassword());
+			}
+			else
+			{
+				valid = false;
+			}
+
+			// email
+			if (nurseUpdate.getEmail() != null
+					&& nurseUpdate.getEmail().matches("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,6}$"))
+			{
+				updatedNurse.setEmail(nurseUpdate.getEmail());
+			}
+			else
+			{
+				valid = false;
+			}
+
+			if (valid)
+			{
+				nurseRepository.save(updatedNurse);
+				return ResponseEntity.ok().build();
+			}
+			else
+			{
+				return ResponseEntity.badRequest().build();
+			}
+
+		}
+		else
+		{
+			return ResponseEntity.notFound().build();
+		}
 	}
+
 	
+	
+	// ENDPOINT DEL @PROFILE --> Se conecta con el NurseProfile.kt
 	@DeleteMapping("/{requestedId}")
-	private ResponseEntity<Void> delete(@PathVariable int requestedId) 
-	{		
-		if (nurseRepository.existsById(requestedId)) 
+	private ResponseEntity<Void> delete(@PathVariable int requestedId)
+	{
+		if (nurseRepository.existsById(requestedId))
 		{
 			nurseRepository.deleteById(requestedId);
 			return ResponseEntity.ok().build();
-		} 
-		else 
+		}
+		else
 		{
 			return ResponseEntity.notFound().build();
 		}
 	}
 }
-
-
