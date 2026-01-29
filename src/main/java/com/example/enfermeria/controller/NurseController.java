@@ -60,6 +60,8 @@ public class NurseController
 		return nurseRepository.findAll();
 	}
 
+	
+	
 	// ENDPOINT DEL @FIND --> Se conecta con el NurseSearch.kt
 	@GetMapping("/name")
 	public ResponseEntity<Nurse> findByName(@RequestParam("name") String name)
